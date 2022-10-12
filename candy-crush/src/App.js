@@ -6,11 +6,13 @@ const candyColors = ['blue', 'green', 'orange', 'purple', 'red', 'yellow']
 
 const App = () => {
 	const [currentColorArrangement, setCurrentColorArrangement] = useState([])
+	const [squareBeingDragged, setSquareBeingDragged] = useState(null)
+	const [squareBeingReplaced, setSquareBeingReplaced] = useState(null)
 
 
 	// VALIDATE MATCHES AND MOVE CANDIES DOWN -- START
 	const checkForColumnOfFour = () => {
-		for (let i = 0; i < 39; i++) {
+		for (let i = 0; i <= 39; i++) {
 			const columnOfFour = [i, i + width, i + width * 2, i + width * 3]
 			const decidedColor = currentColorArrangement[i]
 
@@ -45,7 +47,7 @@ const App = () => {
 	}
 
 	const checkForColumnOfThree = () => {
-		for (let i = 0; i < 47; i++) {
+		for (let i = 0; i <= 47; i++) {
 			const columnOfThree = [i, i + width, i + width * 2]
 			const decidedColor = currentColorArrangement[i]
 
@@ -81,7 +83,7 @@ const App = () => {
 	}
 
 	const moveIntoSquareBelow = () => {
-		for (let i = 0; i < 64 - width; i++) {
+		for (let i = 0; i <= 55 - width; i++) {
 			const firstRow = [0, 1, 2, 3, 4, 5, 6, 7]
 			const isFirstRow = firstRow.includes(i)
 			if (isFirstRow && currentColorArrangement[i] === '') {
@@ -97,22 +99,42 @@ const App = () => {
 	}
 // VALIDATE MATCHES AND MOVE CANDIES DOWN -- END
 
+
+// DROP CANDIES -- START
 const dragStart = (e) => {
 	console.log(e.target)
 	console.log('drag start')
+	setSquareBeingDragged(e.target)
 }
 
 
 const dragDrop = (e) => {
 	console.log(e.target)
 	console.log('drag drop')
+	setSquareBeingReplaced(e.target)
 }
 
-
+		//CHECKS FOR VALID MOVE
 const dragEnd = (e) => {
-	console.log(e.target)
 	console.log('drag end')
+	const squareBeingDraggedId = parseInt(squareBeingDragged.getAttribute('data-id'))
+	const squareBeingReplacedId = parseInt(squareBeingReplaced.getAttribute('data-id'))
+
+	currentColorArrangement[squareBeingReplacedId] = squareBeingDragged.style.backgroundColor
+	currentColorArrangement[squareBeingDraggedId] = squareBeingReplaced.style.backgroundColor
+
+	console.log(`DRAGGED: ${squareBeingDraggedId} | REPLACED: ${squareBeingReplacedId}`)
+
+	const validMoves = [
+		squareBeingDraggedId - 1,
+		squareBeingDraggedId - width,
+		squareBeingDraggedId + 1,
+		squareBeingDraggedId + width, 
+	]
+
+	const validMove = validMoves.includes(squareBeingReplacedId)
 }
+// DROP CANDIES -- END
 
 
 
@@ -153,7 +175,7 @@ const dragEnd = (e) => {
 		currentColorArrangement,
 	])
 
-	console.log(currentColorArrangement)
+	// console.log(currentColorArrangement)
 
 	return (
 		<div className='app'>
