@@ -9,7 +9,6 @@ const App = () => {
 	const [squareBeingDragged, setSquareBeingDragged] = useState(null)
 	const [squareBeingReplaced, setSquareBeingReplaced] = useState(null)
 
-
 	// VALIDATE MATCHES AND MOVE CANDIES DOWN -- START
 	const checkForColumnOfFour = () => {
 		for (let i = 0; i <= 39; i++) {
@@ -22,6 +21,7 @@ const App = () => {
 				)
 			) {
 				columnOfFour.forEach((square) => (currentColorArrangement[square] = ''))
+				return true
 			}
 		}
 	}
@@ -42,6 +42,7 @@ const App = () => {
 				)
 			) {
 				rowOfFour.forEach((square) => (currentColorArrangement[square] = ''))
+				return true
 			}
 		}
 	}
@@ -59,6 +60,7 @@ const App = () => {
 				columnOfThree.forEach(
 					(square) => (currentColorArrangement[square] = '')
 				)
+				return true
 			}
 		}
 	}
@@ -78,12 +80,13 @@ const App = () => {
 				)
 			) {
 				rowOfThree.forEach((square) => (currentColorArrangement[square] = ''))
+				return true
 			}
 		}
 	}
 
 	const moveIntoSquareBelow = () => {
-		for (let i = 0; i <= 55 - width; i++) {
+		for (let i = 0; i <= 55; i++) {
 			const firstRow = [0, 1, 2, 3, 4, 5, 6, 7]
 			const isFirstRow = firstRow.includes(i)
 			if (isFirstRow && currentColorArrangement[i] === '') {
@@ -97,47 +100,69 @@ const App = () => {
 			}
 		}
 	}
-// VALIDATE MATCHES AND MOVE CANDIES DOWN -- END
+	// VALIDATE MATCHES AND MOVE CANDIES DOWN -- END
 
+	// DROP CANDIES -- START
+	const dragStart = (e) => {
+		console.log(e.target)
+		console.log('drag start')
+		setSquareBeingDragged(e.target)
+	}
 
-// DROP CANDIES -- START
-const dragStart = (e) => {
-	console.log(e.target)
-	console.log('drag start')
-	setSquareBeingDragged(e.target)
-}
+	const dragDrop = (e) => {
+		console.log(e.target)
+		console.log('drag drop')
+		setSquareBeingReplaced(e.target)
+	}
 
+	//CHECKS FOR VALID MOVE
+	const dragEnd = (e) => {
+		console.log('drag end')
+		const squareBeingDraggedId = parseInt(
+			squareBeingDragged.getAttribute('data-id')
+		)
+		const squareBeingReplacedId = parseInt(
+			squareBeingReplaced.getAttribute('data-id')
+		)
 
-const dragDrop = (e) => {
-	console.log(e.target)
-	console.log('drag drop')
-	setSquareBeingReplaced(e.target)
-}
+		currentColorArrangement[squareBeingReplacedId] =
+			squareBeingDragged.style.backgroundColor
+		currentColorArrangement[squareBeingDraggedId] =
+			squareBeingReplaced.style.backgroundColor
 
-		//CHECKS FOR VALID MOVE
-const dragEnd = (e) => {
-	console.log('drag end')
-	const squareBeingDraggedId = parseInt(squareBeingDragged.getAttribute('data-id'))
-	const squareBeingReplacedId = parseInt(squareBeingReplaced.getAttribute('data-id'))
+		console.log(
+			`DRAGGED: ${squareBeingDraggedId} | REPLACED: ${squareBeingReplacedId}`
+		)
 
-	currentColorArrangement[squareBeingReplacedId] = squareBeingDragged.style.backgroundColor
-	currentColorArrangement[squareBeingDraggedId] = squareBeingReplaced.style.backgroundColor
+		const validMoves = [
+			squareBeingDraggedId - 1,
+			squareBeingDraggedId - width,
+			squareBeingDraggedId + 1,
+			squareBeingDraggedId + width,
+		]
 
-	console.log(`DRAGGED: ${squareBeingDraggedId} | REPLACED: ${squareBeingReplacedId}`)
+		const validMove = validMoves.includes(squareBeingReplacedId)
 
-	const validMoves = [
-		squareBeingDraggedId - 1,
-		squareBeingDraggedId - width,
-		squareBeingDraggedId + 1,
-		squareBeingDraggedId + width, 
-	]
+		const isAColumnOfFour = checkForColumnOfFour()
+		const isARowOfFour = checkForRowOfFour()
+		const isAColumnOfThree = checkForColumnOfThree()
+		const isARowOfThree = checkForRowOfThree()
 
-	const validMove = validMoves.includes(squareBeingReplacedId)
-}
-// DROP CANDIES -- END
-
-
-
+		if (
+			squareBeingReplacedId &&
+			validMove &&
+			(isAColumnOfFour || isARowOfFour || isAColumnOfThree || isARowOfThree)
+		) {
+			setSquareBeingDragged(null)
+			setSquareBeingReplaced(null)
+		} else {
+			currentColorArrangement[squareBeingReplacedId] =
+				squareBeingReplaced.style.backgroundColor
+			currentColorArrangement[squareBeingDraggedId] =
+				squareBeingDragged.style.backgroundColor
+		}
+	}
+	// DROP CANDIES -- END
 
 	const createBoard = () => {
 		const randomColorArrangement = []
@@ -193,7 +218,6 @@ const dragEnd = (e) => {
 						onDragLeave={(e) => e.preventDefault()}
 						onDrop={dragDrop}
 						onDragEnd={dragEnd}
-
 					/>
 				))}
 			</div>
